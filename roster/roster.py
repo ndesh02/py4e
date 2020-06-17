@@ -61,11 +61,12 @@ for entry in json_data:
         (user_id, course_id, role) VALUES ( ?, ?, ? )''',
         ( user_id, course_id, role ) )
 
-#My own JOIN
+    conn.commit()
 
+#My own JOIN
 sqlstr = ''' SELECT User.name, Course.title, Member.role
     FROM User JOIN Course JOIN Member
     ON Member.user_id = User.id AND Member.course_id = Course.id
     ORDER BY Course.title LIMIT 10'''
 
-    conn.commit()
+cur.close()
