@@ -13,7 +13,7 @@ for line in handle:
             counts[hours[0]]=counts.get(hours[0],0)+1
     except:
         r=1
-        continue  
+        continue
 
 #sort by the key
 lst=list()
