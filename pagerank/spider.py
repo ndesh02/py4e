@@ -40,7 +40,7 @@ else :
     #Ask for a new web
     starturl = input('Enter web url or enter: ')
     #Insert the url we start with
-    if ( len(starturl) < 1 ) : starturl = 'http://www.dr-chuck.com/'
+    if ( len(starturl) < 1 ) : starturl = 'http://python-data.dr-chuck.net/'
     if ( starturl.endswith('/') ) : starturl = starturl[:-1]
     web = starturl
     if ( starturl.endswith('.htm') or starturl.endswith('.html') ) :

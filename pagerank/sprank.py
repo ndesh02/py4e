@@ -7,27 +7,31 @@ cur = conn.cursor()
 # in pages in the SCC that have in and out links
 cur.execute('''SELECT DISTINCT from_id FROM Links''')
 from_ids = list()
-for row in cur: 
+for row in cur:
     from_ids.append(row[0])
 
-# Find the ids that receive page rank 
+# Find the ids that receive page rank
 to_ids = list()
 links = list()
 cur.execute('''SELECT DISTINCT from_id, to_id FROM Links''')
+#Making a links list
 for row in cur:
     from_id = row[0]
     to_id = row[1]
     if from_id == to_id : continue
     if from_id not in from_ids : continue
     if to_id not in from_ids : continue
+    #Only links that point to what we've retrieved
     links.append(row)
     if to_id not in to_ids : to_ids.append(to_id)
 
 # Get latest page ranks for strongly connected component
+#Path from every id to another id
 prev_ranks = dict()
 for node in from_ids:
     cur.execute('''SELECT new_rank FROM Pages WHERE id = ?''', (node, ))
     row = cur.fetchone()
+    #dictionary that's based on primary key = rank
     prev_ranks[node] = row[0]
 
 sval = input('How many iterations:')
@@ -35,7 +39,7 @@ many = 1
 if ( len(sval) > 0 ) : many = int(sval)
 
 # Sanity check
-if len(prev_ranks) < 1 : 
+if len(prev_ranks) < 1 :
     print("Nothing to page rank.  Check data.")
     quit()
 
@@ -44,6 +48,7 @@ for i in range(many):
     # print prev_ranks.items()[:5]
     next_ranks = dict();
     total = 0.0
+    #Computes the new page ranks by looping through previous ranks
     for (node, old_rank) in list(prev_ranks.items()):
         total = total + old_rank
         next_ranks[node] = 0.0
@@ -53,6 +58,7 @@ for i in range(many):
     for (node, old_rank) in list(prev_ranks.items()):
         # print node, old_rank
         give_ids = list()
+        #outbounds links and make sure it doesn't link to itself
         for (from_id, to_id) in links:
             if from_id != node : continue
            #  print '   ',from_id,to_id
@@ -60,15 +66,17 @@ for i in range(many):
             if to_id not in to_ids: continue
             give_ids.append(to_id)
         if ( len(give_ids) < 1 ) : continue
+        #how much we're gonna give in our outbound links
         amount = old_rank / len(give_ids)
         # print node, old_rank,amount, give_ids
-    
+        #All links give out a bit of goodness and give it to the links
         for id in give_ids:
             next_ranks[id] = next_ranks[id] + amount
-    
+
     newtot = 0
     for (node, next_rank) in list(next_ranks.items()):
         newtot = newtot + next_rank
+        #taking a fraction away from everyone and giving it to everyone else
     evap = (total - newtot) / len(next_ranks)
 
     # print newtot, evap
@@ -81,6 +89,7 @@ for i in range(many):
 
     # Compute the per-page average change from old rank to new rank
     # As indication of convergence of the algorithm
+    #Calculating the avg difference btwn page ranks - how stable is it (per node)
     totdiff = 0
     for (node, old_rank) in list(prev_ranks.items()):
         new_rank = next_ranks[node]
@@ -100,4 +109,3 @@ for (id, new_rank) in list(next_ranks.items()) :
     cur.execute('''UPDATE Pages SET new_rank=? WHERE id=?''', (new_rank, id))
 conn.commit()
 cur.close()
-
